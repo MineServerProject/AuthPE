@@ -1,15 +1,19 @@
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.List;
 
-import redstonelamp.Server;
+import redstonelamp.Player;
 import redstonelamp.plugin.PluginBase;
 import redstonelamp.command.Command;
 import redstonelamp.command.CommandSender;
-import redstonelamp.command.CommandExecutor;
+import redstonelamp.event.player.PlayerInteractEvent;
 import redstonelamp.event.player.PlayerJoinEvent;
 import redstonelamp.event.player.PlayerMoveEvent;
 import redstonelamp.event.player.PlayerDisconnectEvent;
@@ -27,7 +31,7 @@ class AuthPE extends PluginBase {
     }
     
     public void onPlayerJoin(PlayerJoinEvent event) { //This is not the final method type
-        String player = event.getPlayer();
+        Player player = event.getPlayer();
         if(!isAuthenticated(player)) {
             player.sendMessage("You must authenticate your account to play!");
             if(accountExistsForPlayer(player)) {
@@ -41,12 +45,12 @@ class AuthPE extends PluginBase {
         }
     }
     
-    public void onCommand(String sender, String cmd, String[] args) {
-        switch(cmd) {
+    public void onCommand(CommandSender sender, Command cmd, String label, List<String> args) {
+        switch(cmd.getName()) {
             case "login":
-                if(args.length > 0)
-                    if(this.accountExistsForPlayer(sender) && this.hash(args[0]).equals(this.getPassword(sender))) {
-                        this.authenticate(sender);
+                if(args.size() > 0)
+                    if(this.accountExistsForPlayer(sender.getPlayer()) && this.hash(args.get(1)).equals(this.getPassword(sender.getPlayer()))) {
+                        this.authenticate(sender.getPlayer());
                         sender.sendMessage("You have been authenticated!");
                     } else
                         sender.sendMessage("Error during authentication!");
@@ -55,11 +59,11 @@ class AuthPE extends PluginBase {
             break;
             
             case "register":
-                if(args.length > 0)
-                    if(!this.accountExistsForPlayer(sender)) {
-                        this.createAccount(sender, this.hash(args[0]));
-                        if(this.accountExistsForPlayer(sender)) {
-                            this.authenticate(sender);
+                if(args.size() > 0)
+                    if(!this.accountExistsForPlayer(sender.getPlayer())) {
+                        this.createAccount(sender.getPlayer(), this.hash(args.get(1)));
+                        if(this.accountExistsForPlayer(sender.getPlayer())) {
+                            this.authenticate(sender.getPlayer());
                         } else
                             sender.sendMessage("Error during authentication");
                     } else
@@ -70,20 +74,22 @@ class AuthPE extends PluginBase {
         }
     }
     
-    public boolean onPlayerMove(PlayerMoveEvent event) { //This is not the final method type
-        String player = event.getPlayer();
+    public boolean onPlayerMove(PlayerMoveEvent event) {
+    	Player player = event.getPlayer();
         if(this.isAuthenticated(player))
             return false;
+        return true;
     }
     
-    public boolean onPlayerInteract(PlayerInteractEvent event) { //This is not the final method type
-        String player = event.getPlayer();
+    public boolean onPlayerInteract(PlayerInteractEvent event) {
+    	Player player = event.getPlayer();
         if(this.isAuthenticated(player))
             return false;
+        return true;
     }
     
     public void onPlayerDisconnect(PlayerDisconnectEvent event) {
-        String player = event.getPlayer();
+    	Player player = event.getPlayer();
         if(this.isAuthenticated(player))
             this.deAuthenticate(player);
     }
@@ -95,41 +101,55 @@ class AuthPE extends PluginBase {
     
     
     // ===== Authentication Methods ===== \\
-    public boolean isAuthenticated(String player) {
+    public boolean isAuthenticated(Player player) {
         if(!(new File(this.getDataFolder() + "cache/" + player + ".temp").isFile()))
             return false;
         return true;
     }
     
-    public void authenticate(String player) {
+    public void authenticate(Player player) {
         if(!(new File(this.getDataFolder() + "cache/" + player + ".temp").isFile())) {
-            PrintWriter writer = new PrintWriter(this.getDataFolder() + "players/" + player + ".acnt", "UTF-8");
-            writer.println("Currently Authenticated");
-            writer.close();
+            PrintWriter writer;
+			try {
+				writer = new PrintWriter(this.getDataFolder() + "players/" + player + ".acnt", "UTF-8");
+				writer.println("Currently Authenticated");
+            	writer.close();
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
         }
     }
     
-    public void deAuthenticate(String player) {
+    public void deAuthenticate(Player player) {
         if(!(new File(this.getDataFolder() + "cache/" + player + ".temp").isFile()))
             new File(this.getDataFolder() + "cache/" + player + ".temp").delete();
     }
     
-    public boolean accountExistsForPlayer(String player) {
+    public boolean accountExistsForPlayer(Player player) {
         if(!(new File(this.getDataFolder() + "players/" + player + ".acnt").isFile()))
             return false;
         return true;
     }
     
-    public void createAccount(String player, String password) {
+    public void createAccount(Player player, String password) {
         if(!(new File(this.getDataFolder() + "players/" + player + ".acnt").isFile())) {
-            PrintWriter writer = new PrintWriter(this.getDataFolder() + "players/" + player + ".acnt", "UTF-8");
-            writer.println(password);
-            writer.close();
+            PrintWriter writer;
+			try {
+				writer = new PrintWriter(this.getDataFolder() + "players/" + player + ".acnt", "UTF-8");
+				writer.println(password);
+            	writer.close();
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
         }
     }
     
-    public String getPassword(String player) {
-        String password;
+    public String getPassword(Player player) {
+        String password = null;
         BufferedReader br = null;
         try {
             String line;
@@ -150,9 +170,15 @@ class AuthPE extends PluginBase {
     }
     
     private String hash(String string) {
-        MessageDigest md = MessageDigest.getInstance("SHA-256");
-        md.update(string.getBytes());
-        String hash = new String(md.digest());
+        MessageDigest md;
+        String hash = null;
+		try {
+			md = MessageDigest.getInstance("SHA-256");
+			md.update(string.getBytes());
+        	hash = new String(md.digest());
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		}
         return hash;
     }
 }
