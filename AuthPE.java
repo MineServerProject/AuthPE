@@ -1,4 +1,8 @@
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.security.MessageDigest;
 
 import redstonelamp.Server;
@@ -8,8 +12,11 @@ import redstonelamp.event.PlayerMoveEvent;
 
 class AuthPE extends PluginBase {
     public void onLoad() {
-    	if(!(new File(this.getDataFolder()).isDirectory()))
-            new File(this.getDataFolder()).mkdirs();
+        if(!(new File(this.getDataFolder()).isDirectory())) {
+        	new File(this.getDataFolder()).mkdirs();
+            new File(this.getDataFolder() + "players/").mkdirs();
+            new File(this.getDataFolder() + "cache/").mkdirs();
+        }
         this.getServer().getLogger().info("AuthPE has been enabled!");
     }
     
@@ -41,23 +48,50 @@ class AuthPE extends PluginBase {
     
     // ===== Authentication Methods ===== \\
     public boolean isAuthenticated(String player) {
-        return false;
+        if(!(new File(this.getDataFolder() + "cache/" + player + ".temp").isFile()))
+        	return false;
+        return true;
     }
     
     public boolean accountExistsForPlayer(String player) {
-        return false;
+    	if(!(new File(this.getDataFolder() + "players/" + player + ".acnt").isFile()))
+    		return false;
+    	return true;
     }
     
     public void createAccount(String player, String password) {
-        if(!(new File(this.getDataFolder() + player + ".acnt").isFile())) {
-            //TODO: Make account
+        if(!(new File(this.getDataFolder() + "players/" + player + ".acnt").isFile())) {
+            PrintWriter writer = new PrintWriter(this.getDataFolder() + "players/" + player + ".acnt", "UTF-8");
+            writer.println(password);
+            writer.close();
         }
     }
     
+    public String getPassword(String player) {
+    	String password;
+        BufferedReader br = null;
+        try {
+            String line;
+            br = new BufferedReader(new FileReader(this.getDataFolder() + "players/" + player + ".acnt"));
+            while((line = br.readLine()) != null) {
+                password = line;
+            }
+        } catch(IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if(br != null)br.close();
+            } catch(IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return password;
+    }
+    
     public String hash(String string) {
-    	MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
-    	messageDigest.update(string.getBytes());
-    	String encryptedString = new String(messageDigest.digest());
-    	return encryptedString;
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        md.update(string.getBytes());
+        String hash = new String(md.digest());
+        return hash;
     }
 }
