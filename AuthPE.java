@@ -7,8 +7,12 @@ import java.security.MessageDigest;
 
 import redstonelamp.Server;
 import redstonelamp.plugin.PluginBase;
-import redstonelamp.event.PlayerJoinEvent;
-import redstonelamp.event.PlayerMoveEvent;
+import redstonelamp.command.Command;
+import redstonelamp.command.CommandSender;
+import redstonelamp.command.CommandExecutor;
+import redstonelamp.event.player.PlayerJoinEvent;
+import redstonelamp.event.player.PlayerMoveEvent;
+import redstonelamp.event.player.PlayerDisconnectEvent;
 
 class AuthPE extends PluginBase {
     public void onLoad() {
@@ -17,6 +21,8 @@ class AuthPE extends PluginBase {
             new File(this.getDataFolder() + "players/").mkdirs();
             new File(this.getDataFolder() + "cache/").mkdirs();
         }
+        this.getCommandRegistrationManager().registerCommand("login", "Login to the server!", false);
+        this.getCommandRegistrationManager().registerCommand("register", "Register an account on the server!", false);
         this.getServer().getLogger().info("AuthPE has been enabled!");
     }
     
@@ -35,13 +41,31 @@ class AuthPE extends PluginBase {
         }
     }
     
+    public void onCommand(String sender, String cmd, String[] args) {
+    	switch(cmd) {
+    	    case "login":
+    	        //TODO: Process login
+    	    break;
+    	    
+    	    case "register":
+    	        //TODO: Process registration
+    	    break;
+    	}
+    }
+    
     public boolean onPlayerMove(PlayerMoveEvent event) { //This is not the final method type
         String player = event.getPlayer();
-        if(isAuthenticated(player))
+        if(this.isAuthenticated(player))
             return false;
     }
     
-    public void onDisable() {
+    public void onPlayerDisconnect(PlayerDisconnectEvent event) {
+    	String player = event.getPlayer();
+        if(this.isAuthenticated(player))
+        	this.deAuthenticate(player);
+    }
+
+	public void onDisable() {
         this.getServer().getLogger().warn("AuthPE is no longer enabled! Did the server shut down?");
     }
     
@@ -51,6 +75,11 @@ class AuthPE extends PluginBase {
         if(!(new File(this.getDataFolder() + "cache/" + player + ".temp").isFile()))
         	return false;
         return true;
+    }
+    
+    public void deAuthenticate(String player) {
+    	if(!(new File(this.getDataFolder() + "cache/" + player + ".temp").isFile()))
+    		new File(this.getDataFolder() + "cache/" + player + ".temp").delete();
     }
     
     public boolean accountExistsForPlayer(String player) {
@@ -88,7 +117,7 @@ class AuthPE extends PluginBase {
         return password;
     }
     
-    public String hash(String string) {
+    private String hash(String string) {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         md.update(string.getBytes());
         String hash = new String(md.digest());
