@@ -1,3 +1,6 @@
+import java.io.File;
+import java.security.MessageDigest;
+
 import redstonelamp.Server;
 import redstonelamp.plugin.PluginBase;
 import redstonelamp.event.PlayerJoinEvent;
@@ -5,7 +8,9 @@ import redstonelamp.event.PlayerMoveEvent;
 
 class AuthPE extends PluginBase {
     public void onLoad() {
-        this.getServer.getLogger().info("AuthPE has been enabled!");
+    	if(!(new File(this.getDataFolder()).isDirectory()))
+            new File(this.getDataFolder()).mkdirs();
+        this.getServer().getLogger().info("AuthPE has been enabled!");
     }
     
     public void onPlayerJoin(PlayerJoinEvent event) { //This is not the final method type
@@ -41,5 +46,18 @@ class AuthPE extends PluginBase {
     
     public boolean accountExistsForPlayer(String player) {
         return false;
+    }
+    
+    public void createAccount(String player, String password) {
+        if(!(new File(this.getDataFolder() + player + ".acnt").isFile())) {
+            //TODO: Make account
+        }
+    }
+    
+    public String hash(String string) {
+    	MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
+    	messageDigest.update(string.getBytes());
+    	String encryptedString = new String(messageDigest.digest());
+    	return encryptedString;
     }
 }
