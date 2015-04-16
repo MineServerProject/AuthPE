@@ -9,7 +9,7 @@ class AuthPE extends PluginBase {
     }
     
     public void onPlayerJoin(PlayerJoinEvent event) { //This is not the final method type
-        player = event.getPlayer();
+        String player = event.getPlayer();
         if(!isAuthenticated(player)) {
             player.sendMessage("You must authenticate your account to play!");
             if(accountExistsForPlayer(player)) {
@@ -24,7 +24,7 @@ class AuthPE extends PluginBase {
     }
     
     public boolean onPlayerMove(PlayerMoveEvent event) { //This is not the final method type
-        player = event.getPlayer();
+        String player = event.getPlayer();
         if(isAuthenticated(player))
             return false;
     }
