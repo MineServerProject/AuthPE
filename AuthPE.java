@@ -11,8 +11,8 @@ import java.util.List;
 
 import redstonelamp.Player;
 import redstonelamp.plugin.PluginBase;
-import redstonelamp.command.Command;
-import redstonelamp.command.CommandSender;
+import redstonelamp.cmd.Command;
+import redstonelamp.cmd.CommandSender;
 import redstonelamp.event.player.PlayerInteractEvent;
 import redstonelamp.event.player.PlayerJoinEvent;
 import redstonelamp.event.player.PlayerMoveEvent;
@@ -30,11 +30,11 @@ class AuthPE extends PluginBase {
 		this.getServer().getLogger().info("AuthPE has been enabled!");
 	}
 	
-	public void onPlayerJoin(PlayerJoinEvent event) { //This is not the final method type
+	public void onPlayerJoin(PlayerJoinEvent event) {
 		Player player = event.getPlayer();
-		if(!isAuthenticated(player)) {
+		if(!isAuthenticated(player.getName())) {
 			player.sendMessage("You must authenticate your account to play!");
-			if(accountExistsForPlayer(player)) {
+			if(accountExistsForPlayer(player.getName())) {
 				player.sendMessage("An account already exists for the username \"" + player + "\"");
 				player.sendMessage("Please run /login <password> to login and play");
 			} else {
@@ -45,12 +45,12 @@ class AuthPE extends PluginBase {
 		}
 	}
 	
-	public void onCommand(CommandSender sender, Command cmd, String label, List<String> args) {
+	public boolean onCommand(CommandSender sender, Command cmd, String label, List<String> args) {
 		switch(cmd.getName()) {
 			case "login":
 				if(args.size() > 0)
-					if(this.accountExistsForPlayer(sender.getPlayer()) && this.hash(args.get(1)).equals(this.getPassword(sender.getPlayer()))) {
-						this.authenticate(sender.getPlayer());
+					if(this.accountExistsForPlayer(sender.getName()) && this.hash(args.get(1)).equals(this.getPassword(sender.getName()))) {
+						this.authenticate(sender.getName());
 						sender.sendMessage("You have been authenticated!");
 					} else
 						sender.sendMessage("Error during authentication!");
@@ -60,10 +60,10 @@ class AuthPE extends PluginBase {
 			
 			case "register":
 				if(args.size() > 0)
-					if(!this.accountExistsForPlayer(sender.getPlayer())) {
-						this.createAccount(sender.getPlayer(), this.hash(args.get(1)));
-						if(this.accountExistsForPlayer(sender.getPlayer())) {
-							this.authenticate(sender.getPlayer());
+					if(!this.accountExistsForPlayer(sender.getName())) {
+						this.createAccount(sender.getName(), this.hash(args.get(1)));
+						if(this.accountExistsForPlayer(sender.getName())) {
+							this.authenticate(sender.getName());
 						} else
 							sender.sendMessage("Error during authentication");
 					} else
@@ -72,24 +72,25 @@ class AuthPE extends PluginBase {
 					sender.sendMessage("Usage: /register <password>");
 			break;
 		}
+		return true;
 	}
 	
 	public boolean onPlayerMove(PlayerMoveEvent event) {
-		Player player = event.getPlayer();
+		String player = event.getPlayer().getName();
 		if(this.isAuthenticated(player))
 			return false;
 		return true;
 	}
 	
 	public boolean onPlayerInteract(PlayerInteractEvent event) {
-		Player player = event.getPlayer();
+		String player = event.getPlayer().getName();
 		if(this.isAuthenticated(player))
 			return false;
 		return true;
 	}
 	
 	public void onPlayerDisconnect(PlayerDisconnectEvent event) {
-		Player player = event.getPlayer();
+		String player = event.getPlayer().getName();
 		if(this.isAuthenticated(player))
 			this.deAuthenticate(player);
 	}
@@ -101,13 +102,13 @@ class AuthPE extends PluginBase {
 	
 	
 	// ===== Authentication Methods ===== \\
-	public boolean isAuthenticated(Player player) {
+	public boolean isAuthenticated(String player) {
 		if(!(new File(this.getDataFolder() + "cache/" + player + ".temp").isFile()))
 			return false;
 		return true;
 	}
 	
-	public void authenticate(Player player) {
+	public void authenticate(String player) {
 		if(!(new File(this.getDataFolder() + "cache/" + player + ".temp").isFile())) {
 			PrintWriter writer;
 			try {
@@ -122,18 +123,18 @@ class AuthPE extends PluginBase {
 		}
 	}
 	
-	public void deAuthenticate(Player player) {
+	public void deAuthenticate(String player) {
 		if(!(new File(this.getDataFolder() + "cache/" + player + ".temp").isFile()))
 			new File(this.getDataFolder() + "cache/" + player + ".temp").delete();
 	}
 	
-	public boolean accountExistsForPlayer(Player player) {
+	public boolean accountExistsForPlayer(String player) {
 		if(!(new File(this.getDataFolder() + "players/" + player + ".acnt").isFile()))
 			return false;
 		return true;
 	}
 	
-	public void createAccount(Player player, String password) {
+	public void createAccount(String player, String password) {
 		if(!(new File(this.getDataFolder() + "players/" + player + ".acnt").isFile())) {
 			PrintWriter writer;
 			try {
@@ -148,7 +149,7 @@ class AuthPE extends PluginBase {
 		}
 	}
 	
-	public String getPassword(Player player) {
+	public String getPassword(String player) {
 		String password = null;
 		BufferedReader br = null;
 		try {
