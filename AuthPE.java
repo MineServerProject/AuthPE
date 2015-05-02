@@ -9,7 +9,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
-import redstonelamp.Player;
+import redstonelamp.entity.Player;
 import redstonelamp.plugin.PluginBase;
 import redstonelamp.cmd.Command;
 import redstonelamp.cmd.CommandSender;
@@ -20,6 +20,7 @@ import redstonelamp.event.player.PlayerDisconnectEvent;
 
 class AuthPE extends PluginBase {
 	public void onLoad() {
+		this.setAPIVersion(1.3);
 		if(!(new File(this.getDataFolder()).isDirectory())) {
 			new File(this.getDataFolder()).mkdirs();
 			new File(this.getDataFolder() + "players/").mkdirs();
@@ -32,9 +33,9 @@ class AuthPE extends PluginBase {
 	
 	public void onPlayerJoin(PlayerJoinEvent event) {
 		Player player = event.getPlayer();
-		if(!isAuthenticated(player.getName())) {
+		if(!isAuthenticated(player.getDisplayName())) {
 			player.sendMessage("You must authenticate your account to play!");
-			if(accountExistsForPlayer(player.getName())) {
+			if(accountExistsForPlayer(player.getDisplayName())) {
 				player.sendMessage("An account already exists for the username \"" + player + "\"");
 				player.sendMessage("Please run /login <password> to login and play");
 			} else {
@@ -76,21 +77,21 @@ class AuthPE extends PluginBase {
 	}
 	
 	public boolean onPlayerMove(PlayerMoveEvent event) {
-		String player = event.getPlayer().getName();
+		String player = event.getPlayer().getDisplayName();
 		if(this.isAuthenticated(player))
 			return false;
 		return true;
 	}
 	
 	public boolean onPlayerInteract(PlayerInteractEvent event) {
-		String player = event.getPlayer().getName();
+		String player = event.getPlayer().getDisplayName();
 		if(this.isAuthenticated(player))
 			return false;
 		return true;
 	}
 	
 	public void onPlayerDisconnect(PlayerDisconnectEvent event) {
-		String player = event.getPlayer().getName();
+		String player = event.getPlayer().getDisplayName();
 		if(this.isAuthenticated(player))
 			this.deAuthenticate(player);
 	}
