@@ -34,8 +34,19 @@ public class Authenticator {
 		return this.tempDir;
 	}
 	
-	public void createAccount() {
-		
+	public void createAccount(Player player, String pass) {
+		if(!(new File(this.authDir + "/" + player.getIdentifier() + ".acnt").isFile())) {
+			PrintWriter writer;
+			try {
+				writer = new PrintWriter(this.authDir + "/" + player.getIdentifier() + ".acnt", "UTF-8");
+				writer.println(api.hash(pass));
+				writer.close();
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	public boolean isAuthenticated(Player player) {
@@ -55,7 +66,7 @@ public class Authenticator {
 		BufferedReader br = null;
 		try {
 			String line;
-			br = new BufferedReader(new FileReader(this.authDir + "/" + player + ".acnt"));
+			br = new BufferedReader(new FileReader(this.authDir + "/" + player.getIdentifier() + ".acnt"));
 			while((line = br.readLine()) != null) {
 				password = line;
 			}
@@ -80,10 +91,10 @@ public class Authenticator {
 	}
 	
 	public void authenticate(Player player) {
-		if(!(new File(this.tempDir + "/" + player + ".temp").isFile())) {
+		if(!(new File(this.tempDir + "/" + player.getIdentifier() + ".temp").isFile())) {
 			PrintWriter writer;
 			try {
-				writer = new PrintWriter(this.getAuthDir() + "/" + player + ".acnt", "UTF-8");
+				writer = new PrintWriter(this.getAuthDir() + "/" + player.getIdentifier() + ".acnt", "UTF-8");
 				writer.println("Currently Authenticated");
 				writer.close();
 			} catch (FileNotFoundException e) {

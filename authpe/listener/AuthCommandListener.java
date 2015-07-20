@@ -35,7 +35,18 @@ public class AuthCommandListener implements CommandListener {
 					break;
 				
 				case "register":
-				
+					if(!api.getAuthenticator().isRegistered(player)) {
+						if(args.length <= 2) {
+							api.getAuthenticator().createAccount(player, args[1]);
+							if(api.getAuthenticator().tryLogin(player, args[1]))
+								player.sendMessage("You have been authenticated!");
+							else
+								player.sendMessage("Error during authentication.");
+						}
+					} else {
+						player.sendMessage("An account exists with this name.");
+						player.sendMessage("Use /login <password> to login");
+					}
 				break;
 			}
 		}
