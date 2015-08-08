@@ -1,9 +1,16 @@
-import redstonelamp.plugin.PluginBase;
 import authpe.API;
 import authpe.listener.AuthCommandListener;
 import authpe.listener.AuthEventListener;
+import redstonelamp.plugin.PluginBase;
+import redstonelamp.resources.annotations.RedstonePlugin;
 
-class AuthPE extends PluginBase {
+@RedstonePlugin(				//The @RedstonePlugin annotation does nothing at the moment but will be used later
+	name = "AuthPE",
+	version = "1.1.2",
+	api = 1.4,
+	author = "Philip Shilling"	
+)
+public class AuthPE extends PluginBase {
 	private API api = new API(this);
 	
 	public void onEnable() {

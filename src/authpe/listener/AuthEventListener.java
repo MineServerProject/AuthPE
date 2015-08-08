@@ -20,7 +20,7 @@ public class AuthEventListener implements Listener {
 	public void onEvent(Event event) {
 		Player player = event.getPlayer();
 		File auth = null;
-		switch(event.getName()) {
+		switch(event.getEventName()) {
 			case "PlayerJoinEvent":
 				player.sendMessage("This server requires authentication to play.");
 				if(api.getAuthenticator().isRegistered(player)) {
