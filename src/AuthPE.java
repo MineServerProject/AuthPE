@@ -4,11 +4,13 @@ import authpe.listener.AuthEventListener;
 import redstonelamp.plugin.PluginBase;
 import redstonelamp.resources.annotations.RedstonePlugin;
 
-@RedstonePlugin(				//The @RedstonePlugin annotation does nothing at the moment but will be used later
+@RedstonePlugin(
 	name = "AuthPE",
 	version = "1.1.2",
 	api = 1.4,
-	author = "Philip Shilling"	
+	author = "Philip Shilling",
+	description = "Block impersonators from joining your server!",
+	website = "http://RedstoneLamp.net"
 )
 public class AuthPE extends PluginBase {
 	private API api = new API(this);
