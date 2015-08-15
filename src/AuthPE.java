@@ -1,12 +1,12 @@
 import authpe.API;
-import authpe.listener.AuthCommandListener;
-import authpe.listener.AuthEventListener;
+import authpe.cmd.*;
+import authpe.listener.EventListener;
 import redstonelamp.plugin.PluginBase;
 import redstonelamp.resources.annotations.RedstonePlugin;
 
 @RedstonePlugin(
 	name = "AuthPE",
-	version = "1.1.2",
+	version = "1.1.3",
 	api = 1.4,
 	author = "Philip Shilling",
 	description = "Block impersonators from joining your server!",
@@ -17,9 +17,9 @@ public class AuthPE extends PluginBase {
 	
 	public void onEnable() {
 		this.getDataFolder();
-		this.getServer().getEventManager().registerEventListener(new AuthEventListener(this, api));
-		this.getServer().getCommandManager().registerCommand("login", "Login to your AuthPE account", new AuthCommandListener(this, api));
-		this.getServer().getCommandManager().registerCommand("register", "Register a new AuthPE account", new AuthCommandListener(this, api));
+		this.getServer().getEventManager().registerEvents(new EventListener(api));
+		this.getServer().getCommandManager().registerCommand("login", "Login to your AuthPE account", new LoginCommand(api));
+		this.getServer().getCommandManager().registerCommand("register", "Register a new AuthPE account", new RegisterCommand(api));
 		this.getLogger().info("AuthPE has been enabled!");
 	}
 	
