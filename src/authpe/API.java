@@ -11,15 +11,15 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
-import redstonelamp.Player;
-import redstonelamp.plugin.PluginBase;
+import net.redstonelamp.Player;
+import authpe.AuthPE;
 
 public class API {
 	private ArrayList<Player> authenticated = new ArrayList<Player>();
-	private PluginBase plugin;
+	private AuthPE plugin;
 	private File playersDir;
 	
-	public API(PluginBase plugin) {
+	public API(AuthPE plugin) {
 		this.plugin = plugin;
 		this.playersDir = new File(this.plugin.getDataFolder() + "/players/");
 		if(!this.playersDir.isDirectory())

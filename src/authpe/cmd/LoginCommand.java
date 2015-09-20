@@ -1,10 +1,9 @@
 package authpe.cmd;
 
 import authpe.API;
-import redstonelamp.Player;
-import redstonelamp.cmd.Command;
-import redstonelamp.cmd.CommandListener;
-import redstonelamp.cmd.CommandSender;
+import net.redstonelamp.Player;
+import net.redstonelamp.cmd.CommandListener;
+import net.redstonelamp.cmd.CommandSender;
 
 public class LoginCommand implements CommandListener {
 	private API api;
@@ -13,8 +12,8 @@ public class LoginCommand implements CommandListener {
 		this.api = api;
 	}
 	
-	public void onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-		if(sender.getSender() instanceof Player) {
+	public void onCommand(CommandSender sender, String cmd, String label, String[] args) {
+		if(sender instanceof Player) {
 			if(api.isRegistered(((Player) sender.getSender()))) {
 				if(args.length > 1)
 					if(this.api.tryLogin(((Player) sender.getSender()), args[1]))
